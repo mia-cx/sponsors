@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Sponsor ads · admin</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header>
+  <strong>Sponsor ads</strong>
+  <nav aria-label="Dashboard">
+    <button type="button" data-tab="campaigns" aria-current="page">Campaigns</button>
+    <button type="button" data-tab="new">New campaign</button>
+    <button type="button" data-tab="footer">Footer</button>
+    <button type="button" data-tab="sites">Sites</button>
+  </nav>
+</header>
+<main>
+  <p id="flash" role="status" aria-live="polite"></p>
+
+  <section id="tab-campaigns">
+    <div class="row">
+      <label>Show<select id="filter">
+        <option value="attention">Needs approval</option>
+        <option value="running">Running</option>
+        <option value="upcoming">Upcoming</option>
+        <option value="ended">Ended</option>
+        <option value="all">All</option>
+      </select></label>
+    </div>
+    <div id="campaigns"></div>
+  </section>
+
+  <section id="tab-new" hidden>
+    <form id="campaign-form">
+      <input type="hidden" name="id">
+      <fieldset>
+        <legend>Campaign</legend>
+        <label>Sponsor’s GitHub login<input name="sponsor" required autocomplete="off" placeholder="octocat"></label>
+        <label>Placement<select name="placement"><option value="tall">Tall · 160 × 600</option><option value="square">Square · 160 × 160</option></select></label>
+        <label>Length<select name="length">
+          <option value="14">2 weeks</option>
+          <option value="28">4 weeks</option>
+          <option value="amount">From a custom amount</option>
+          <option value="days">A number of days</option>
+        </select></label>
+        <label class="amount" hidden>Amount paid (USD)<input name="amount" type="number" min="1" step="1"></label>
+        <label class="days" hidden>Days<input name="days" type="number" min="1" max="366"></label>
+        <p class="hint" id="length-hint"></p>
+        <label>Start<select name="start-mode"><option value="auto">Next free window</option><option value="date">On a date</option></select></label>
+        <label class="start-date" hidden>Start date (UTC)<input name="start" type="datetime-local"></label>
+        <p class="hint" id="start-hint"></p>
+      </fieldset>
+      <fieldset>
+        <legend>Ad</legend>
+        <label>Type<select name="kind"><option value="image">Image</option><option value="text">Text</option></select></label>
+        <div class="kind-image">
+          <label>Image<input name="file" type="file" accept="image/*"></label>
+          <div id="cropper" class="cropper" hidden>
+            <canvas id="crop-canvas" aria-label="Drag to choose the part of the image to use"></canvas>
+            <label>Zoom<input id="crop-zoom" type="range" min="0.2" max="1" step="0.01" value="1"></label>
+            <div class="previews"><figure><img id="preview-1x" alt=""><figcaption id="preview-1x-cap"></figcaption></figure><figure><img id="preview-2x" alt=""><figcaption id="preview-2x-cap"></figcaption></figure></div>
+          </div>
+          <label>What the image says, for screen readers<input name="alt" maxlength="200"></label>
+        </div>
+        <div class="kind-text" hidden>
+          <label>Name<input name="name" maxlength="40"></label>
+          <label>Headline <span class="count" data-for="headline"></span><input name="headline"></label>
+          <label class="body-field">Body <span class="count" data-for="body"></span><textarea name="body" rows="3"></textarea></label>
+        </div>
+        <label>Link<input name="link_url" type="url" required placeholder="https://"></label>
+        <label>Note (only you see this)<input name="note" maxlength="500"></label>
+      </fieldset>
+      <div class="row"><button type="submit" class="primary" id="save">Create campaign</button><button type="button" id="cancel-edit" hidden>Cancel</button></div>
+      <p class="hint">New campaigns start as drafts on every site. Approve them on the sites the sponsor asked for.</p>
+    </form>
+  </section>
+
+  <section id="tab-footer" hidden>
+    <div class="row"><button type="button" id="sync">Refresh from GitHub Sponsors</button><span class="hint" id="sync-hint"></span></div>
+    <div id="footer-list"></div>
+  </section>
+
+  <section id="tab-sites" hidden>
+    <div id="sites"></div>
+    <form id="site-form" class="row">
+      <label>Host<input name="host" placeholder="example.com" required></label>
+      <label>Name<input name="name" placeholder="Example" required></label>
+      <button type="submit" class="primary">Add site</button>
+    </form>
+    <p class="hint">A new site gets every running and upcoming campaign as a draft.</p>
+  </section>
+</main>
+<script type="module" src="./main.ts"></script>
+</body>
+</html>

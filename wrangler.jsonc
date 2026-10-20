@@ -1,0 +1,14 @@
+{
+  "name": "sponsors",
+  "account_id": "492214885e7a580ccc1d141dfdb4dc5f",
+  "compatibility_date": "2026-10-01",
+  "main": "src/worker/index.ts",
+  // dist/ is the Vite build of the /admin dashboard. The Worker checks Access before serving it.
+  "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": ["/", "/api/*", "/admin", "/admin/*"] },
+  "d1_databases": [{ "binding": "DB", "database_name": "sponsors", "database_id": "9afc5695-838d-49b0-a571-7013f43f5634", "migrations_dir": "migrations" }],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "sponsors" }],
+  // Refresh the footer grid from GitHub Sponsors every hour.
+  "triggers": { "crons": ["17 * * * *"] },
+  "routes": [{ "pattern": "sponsors.mia.cx", "custom_domain": true }]
+  // Secrets (set with scripts/setup-ci.sh): ACCESS_TEAM_DOMAIN, ACCESS_AUD, GITHUB_TOKEN.
+}
