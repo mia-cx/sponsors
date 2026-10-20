@@ -184,11 +184,11 @@ finish() {
 # Replace the example below. Set TOTAL_STAGES to match the stages you write.
 # ──────────────────────────────────────────────────────────────────────────
 
-# Sets up everything sponsors.mia.cx needs: deploy secrets for CI, the Access gate for /admin,
-# and the GitHub token that reads your sponsors. Re-run it when a token expires.
+# Sets up the deploy secrets for CI and the GitHub token that reads your sponsors.
+# Re-run it when a token expires. The Access gate for /admin has its own wizard: scripts/setup-access.sh.
 # Run from the repository root: bash scripts/setup.sh
 
-TOTAL_STAGES=6
+TOTAL_STAGES=5
 REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || true)
 if [[ -z "$REPO" ]]; then
   printf '%sRun this from the sponsors checkout, with gh installed and logged in (gh auth login).%s\n' "$RED" "$RESET"
@@ -239,27 +239,6 @@ fi
 set_secret RELEASE_PR_TOKEN "$RELEASE_PR_TOKEN"
 pause
 
-stage "Cloudflare Access: lock /admin"
-say "Only you should be able to open the dashboard. Access asks for your login before /admin loads."
-open_url "https://one.dash.cloudflare.com/"
-step "Pick the mia.cx account. Go to Access → Applications → Add an application → Self-hosted."
-step "Application name: Sponsor ads admin. Add two public hostnames: sponsors.mia.cx with path admin, and sponsors.mia.cx with path api/admin."
-step "Add a policy: Action 'Allow', Include → Emails → your email address. Save the application."
-step "Open the application again and copy its 'Application Audience (AUD) Tag'."
-ask_secret ACCESS_AUD "Paste the AUD tag:"
-step "Under Settings → Custom pages (or Team name and domain), find your team domain, like yourteam.cloudflareaccess.com."
-ask ACCESS_TEAM "Your team domain (yourteam.cloudflareaccess.com):"
-ACCESS_TEAM="https://${ACCESS_TEAM#https://}"
-if curl -fsS "$ACCESS_TEAM/cdn-cgi/access/certs" | grep -q '"keys"'; then
-  printf '  %s✓ found the signing keys for %s%s\n' "$GREEN" "$ACCESS_TEAM" "$RESET"
-else
-  warn "No Access keys at $ACCESS_TEAM. Check the team domain."
-  confirm "Save it anyway?" || exit 1
-fi
-wrangler_secret ACCESS_TEAM_DOMAIN "$ACCESS_TEAM"
-wrangler_secret ACCESS_AUD "$ACCESS_AUD"
-pause
-
 stage "GitHub: read your sponsors"
 say "The footer grid lists your public monthly sponsors. The Worker reads them with a token of yours."
 open_url "https://github.com/settings/tokens/new?description=sponsors.mia.cx%20footer&scopes=read:user,read:org"
@@ -291,7 +270,7 @@ gh secret list --repo "$REPO" | sed 's/^/    /'
 say "Worker secrets on sponsors:"
 pnpm exec wrangler secret list 2>/dev/null | grep -o '"name": "[^"]*"' | sed 's/^/    /' || true
 say ""
-say "Open https://sponsors.mia.cx/admin: Access should ask you to sign in, then show the dashboard."
+say "Next: run bash scripts/setup-access.sh to lock /admin behind Cloudflare Access."
 pause "Press Enter to finish"
 
 finish
