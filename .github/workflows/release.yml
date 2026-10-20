@@ -66,9 +66,9 @@ jobs:
       - name: Open or update the version pull request
         if: inputs.retry_release_commit == ''
         uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
         with:
+          # The release token, so CI runs on the version PR; v2 rejects a GITHUB_TOKEN env that differs from this.
+          github-token: ${{ secrets.RELEASE_PR_TOKEN || github.token }}
           version-script: pnpm release:version
           commit-message: 'chore(release): version sponsors'
           pr-title: 'chore(release): version sponsors'
