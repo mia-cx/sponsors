@@ -196,7 +196,8 @@ API="https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID"
 for tool in curl jq pnpm; do
   command -v "$tool" >/dev/null 2>&1 || { printf '%sThis wizard needs %s.%s\n' "$RED" "$tool" "$RESET"; exit 1; }
 done
-cf() { curl -sS -H "Authorization: Bearer $ACCESS_API_TOKEN" -H 'Content-Type: application/json' "$@"; }
+# The token goes in through a curl config on a file descriptor, so it never shows up in the process list.
+cf() { curl -sS --config <(printf 'header = "Authorization: Bearer %s"\n' "$ACCESS_API_TOKEN") -H 'Content-Type: application/json' "$@"; }
 cf_error() { jq -r '[.errors[]?.message] | join("; ") | if . == "" then "unknown error" else . end' <<<"$1"; }
 wrangler_secret() {
   if printf '%s' "$2" | pnpm exec wrangler secret put "$1" >/dev/null 2>&1; then
@@ -232,7 +233,12 @@ while :; do
   org=$(cf "$API/access/organizations")
   TEAM_DOMAIN=$(jq -r '.result.auth_domain // empty' <<<"$org")
   [[ -n "$TEAM_DOMAIN" ]] && break
-  warn "No Zero Trust team on this account yet."
+  if [[ "$(jq -r .success <<<"$org")" != true ]] && grep -qiE 'auth|permission' <<<"$(cf_error "$org")"; then
+    warn "Cloudflare refused to read the Zero Trust team: $(cf_error "$org")"
+    warn "Add 'Access: Organizations, Identity Providers, and Groups → Read' to the token and run the wizard again."
+    exit 1
+  fi
+  warn "No Zero Trust team on this account yet. Cloudflare said: $(cf_error "$org")"
   open_url "https://one.dash.cloudflare.com/$ACCOUNT_ID"
   step "Pick a team name, choose the Free plan, and finish the setup steps."
   pause "Press Enter when the team exists"
