@@ -56,8 +56,26 @@ pnpm dev            # http://localhost:8787/admin works without Access when LOCA
 pnpm test
 ```
 
+## Locking /admin with Cloudflare Access
+
+Run `bash scripts/setup-access.sh`. It asks for a short-lived API token, creates the Access app through the
+Cloudflare API, sets the `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` Worker secrets, and checks that `/admin` now redirects
+to the Access login. Until then `/admin` answers 403.
+
+By hand, the same steps are:
+
+1. In [Zero Trust](https://one.dash.cloudflare.com/), on the mia.cx account, create a team if you don't have one
+   (Free plan). Note the team domain, like `yourteam.cloudflareaccess.com`, under Settings.
+2. Access → Applications → Add an application → Self-hosted. Name it "Sponsor ads admin" and add two public
+   hostnames: `sponsors.mia.cx` with path `admin`, and `sponsors.mia.cx` with path `api/admin`.
+3. Add a policy: action Allow, Include → Emails → your address. Save.
+4. Open the app again and copy its Application Audience (AUD) tag.
+5. Set the Worker secrets: `pnpm exec wrangler secret put ACCESS_TEAM_DOMAIN` (as `https://yourteam.cloudflareaccess.com`)
+   and `pnpm exec wrangler secret put ACCESS_AUD`.
+6. Open https://sponsors.mia.cx/admin: Access asks for a one-time code by email, then the dashboard loads.
+
 ## Releasing
 
 Pull requests need a changeset (`pnpm changeset`). Merging to `main` opens a version pull request; merging that deploys,
-after applying D1 migrations. Run `bash scripts/setup.sh` once to set the CI secrets, the Access settings and the GitHub
-token that reads your sponsors, and again when a token expires.
+after applying D1 migrations. Run `bash scripts/setup.sh` once to set the CI secrets and the GitHub token that reads your
+sponsors, and again when a token expires.
