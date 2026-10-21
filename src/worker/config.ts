@@ -17,8 +17,8 @@ export const PLACEMENTS: Record<Placement, {
   daysPerDollar: number;
   text: {headline: number; body: number};
 }> = {
-  tall: {name: 'Tall', width: 160, height: 600, cap: 6, seconds: 30, prices: [{days: 14, dollars: 8}, {days: 28, dollars: 14}], daysPerDollar: 2, text: {headline: 40, body: 90}},
-  square: {name: 'Square', width: 160, height: 160, cap: 8, seconds: 20, prices: [{days: 14, dollars: 4}, {days: 28, dollars: 7}], daysPerDollar: 4, text: {headline: 30, body: 0}},
+  tall: {name: 'Tall', width: 160, height: 600, cap: 6, seconds: 20, prices: [{days: 14, dollars: 8}, {days: 28, dollars: 14}], daysPerDollar: 2, text: {headline: 40, body: 90}},
+  square: {name: 'Square', width: 160, height: 160, cap: 8, seconds: 15, prices: [{days: 14, dollars: 4}, {days: 28, dollars: 7}], daysPerDollar: 4, text: {headline: 30, body: 0}},
 };
 export const MIN_CUSTOM_DAYS = 7;
 export const MAX_IMAGE_BYTES = 300 * 1024;
