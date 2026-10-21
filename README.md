@@ -25,8 +25,8 @@ Set in `src/worker/config.ts`; the advertise pages read them from `/api/availabi
 
 | Placement | Size | Cap per site | Per turn | 2 weeks | 4 weeks | Custom amounts |
 | --- | --- | --- | --- | --- | --- | --- |
-| Tall | 160 × 600 | 6 | 12 s | $8 | $14 | $1 = 2 days |
-| Square | 160 × 160 | 8 | 8 s | $4 | $7 | $1 = 4 days |
+| Tall | 160 × 600 | 6 | 30 s | $8 | $14 | $1 = 2 days |
+| Square | 160 × 160 | 8 | 20 s | $4 | $7 | $1 = 4 days |
 
 Custom one-time amounts need at least 7 days. A sponsor who buys the same campaign twice is mirrored: their ad shows on
 both sidebars at once and counts twice against the cap. When a placement is full, new campaigns are booked into the next
