@@ -1,6 +1,6 @@
 # Sponsors
 
-The sponsor ad service behind Mia's sites, at https://sponsors.mia.cx. It stores campaigns, serves the ads each site shows
+The sponsor ad service behind my sites, at https://sponsors.mia.cx. It stores campaigns, serves the ads each site shows
 in its sidebars, lists monthly GitHub sponsors for site footers, and hosts the `/admin` dashboard.
 
 ## How sites use it

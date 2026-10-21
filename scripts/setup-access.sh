@@ -255,7 +255,7 @@ body=$(jq -n --arg name "$APP_NAME" --arg host "$HOST" --arg email "$ADMIN_EMAIL
   name: $name, type: "self_hosted", domain: "\($host)/admin",
   destinations: [{type: "public", uri: "\($host)/admin"}, {type: "public", uri: "\($host)/api/admin"}],
   session_duration: "24h", app_launcher_visible: false,
-  policies: [{name: "Only Mia", decision: "allow", include: [{email: {email: $email}}]}]
+  policies: [{name: "Only me", decision: "allow", include: [{email: {email: $email}}]}]
 }')
 existing=$(cf "$API/access/apps?per_page=100" | jq -r --arg name "$APP_NAME" '.result[]? | select(.name == $name) | .id' | head -n1)
 if [[ -n "$existing" ]]; then
