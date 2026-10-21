@@ -1,5 +1,11 @@
 # sponsors
 
+## 0.1.3
+
+### Patch Changes
+
+- 51cacc6: Ads stay up longer before rotating: 20 seconds for tall ads and 15 seconds for square ads, up from 12 and 8.
+
 ## 0.1.2
 
 ### Patch Changes
