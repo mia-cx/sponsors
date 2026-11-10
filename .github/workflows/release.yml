@@ -67,7 +67,7 @@ jobs:
           echo "release=$release sha=$sha"
       - name: Check whether the release PR passed CI on the same tree
         id: validate
-        if: github.event_name == 'push' && steps.target.outputs.release == 'true'
+        if: github.event_name == 'push' && github.run_attempt == '1' && steps.target.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_SHA: ${{ steps.target.outputs.sha }}
@@ -113,10 +113,11 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Deploy-only reruns retain the original version job's outputs.
       - run: pnpm check
-        if: needs.version.outputs.validated != 'true'
+        if: github.run_attempt != '1' || needs.version.outputs.validated != 'true'
       - run: pnpm test
-        if: needs.version.outputs.validated != 'true'
+        if: github.run_attempt != '1' || needs.version.outputs.validated != 'true'
       - name: Deploy
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then

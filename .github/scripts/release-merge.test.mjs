@@ -151,14 +151,14 @@ test('deploy skips only checks covered by CI and still builds, migrates, deploys
   const [version, deploy] = workflow.split('\n  deploy:')
   assert.match(version, /actions: read/)
   assert.match(version, /validated: \$\{\{ steps.validate.outputs.validated \}\}/)
-  assert.match(version, /if: github.event_name == 'push' && steps.target.outputs.release == 'true'/)
+  assert.match(version, /if: github.event_name == 'push' && github.run_attempt == '1' && steps.target.outputs.release == 'true'/)
   assert.match(version, /node .github\/scripts\/release-merge.mjs .* validated < "\$RUNNER_TEMP\/pulls.json"/)
   assert.match(version, /echo "validated=\$validated" >> "\$GITHUB_OUTPUT"/)
   assert.match(deploy, /needs: version\n    if: needs.version.outputs.release == 'true'/)
   assert.equal((deploy.match(/if:/g) ?? []).length, 3)
   for (const command of ['pnpm check', 'pnpm test']) {
     assert.ok(ci.includes(`- run: ${command}\n`))
-    assert.ok(deploy.includes(`- run: ${command}\n        if: needs.version.outputs.validated != 'true'`))
+    assert.ok(deploy.includes(`- run: ${command}\n        if: github.run_attempt != '1' || needs.version.outputs.validated != 'true'`))
   }
   for (const command of ['pnpm build', 'wrangler d1 migrations apply DB --remote', 'wrangler deploy --message', 'gh release create']) {
     assert.ok(deploy.includes(command))
