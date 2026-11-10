@@ -25,11 +25,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      actions: read
       contents: write
       pull-requests: write
     outputs:
       release: ${{ steps.target.outputs.release }}
       sha: ${{ steps.target.outputs.sha }}
+      validated: ${{ steps.validate.outputs.validated }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -58,11 +60,20 @@ jobs:
             git cat-file -e "$RETRY_SHA^{commit}"
             git merge-base --is-ancestor "$RETRY_SHA" origin/main
           fi
-          release="$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/pulls" --paginate --slurp | node .github/scripts/release-merge.mjs "$sha" "$GITHUB_REPOSITORY")"
+          release="$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/pulls" --paginate --slurp | tee "$RUNNER_TEMP/pulls.json" | node .github/scripts/release-merge.mjs "$sha" "$GITHUB_REPOSITORY")"
           if [ -n "$RETRY_SHA" ]; then test "$release" = true; fi
           echo "release=$release" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "release=$release sha=$sha"
+      - name: Check whether the release PR passed CI on the same tree
+        id: validate
+        if: github.event_name == 'push' && steps.target.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          validated="$(node .github/scripts/release-merge.mjs "$RELEASE_SHA" "$GITHUB_REPOSITORY" validated < "$RUNNER_TEMP/pulls.json")"
+          echo "validated=$validated" >> "$GITHUB_OUTPUT"
       - name: Open or update the version pull request
         if: inputs.retry_release_commit == ''
         uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2
@@ -103,7 +114,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+        if: needs.version.outputs.validated != 'true'
       - run: pnpm test
+        if: needs.version.outputs.validated != 'true'
       - name: Deploy
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
